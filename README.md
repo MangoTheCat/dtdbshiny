@@ -16,7 +16,7 @@ Empowered by DataTable, PostgreSQL(one of many relational database options) and 
 - Shiny: Web Application Framework for R
 - dplyr: Data manipulation
 
-This demo has also drawn inpsiration from  
+This demo is inspired by  
 
 - New inline edit feature of [DT](https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit)(requires version >= 0.2.30)
 - [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
@@ -32,4 +32,4 @@ To run the app:
 shiny::runApp("app")
 ```
 
-<img width="100%" src="./pics/screenshot2.jpg" alt="">
+<img width="100%" src="./pics/screenshot2.JPG" alt="">
