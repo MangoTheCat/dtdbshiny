@@ -1,7 +1,3 @@
----
-output:
-  html_document: default
----
 # dtdbshiny
 Inline Editing and Database Updating in shiny app
 
