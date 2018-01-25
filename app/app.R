@@ -93,8 +93,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   rvs <- reactiveValues(
-    data = NULL, #dataFilePath
-    dbdata = list(),
+    data = NA, 
+    dbdata = NA,
     dataSame = TRUE,
     editedInfo = NA
   )
@@ -124,9 +124,9 @@ server <- function(input, output, session) {
     
     # Lightly format data by arranging id
     # Not sure why disordered after sending UPDATE query in db    
-    data <- mysource()
+    data <- mysource() %>% arrange(id)
     
-    rvs$data <- data %>% arrange(id)
+    rvs$data <- data
     rvs$dbdata <- data
     
   })
@@ -174,6 +174,13 @@ server <- function(input, output, session) {
     updateDB(editedValue = rvs$editedInfo, pool = pool, tbl = "nasa")
     
     rvs$dbdata <- rvs$data
+    rvs$dataSame <- TRUE
+  })
+  
+  #-----------------------------------------
+  # Oberve cancel -> revert to last saved version
+  observeEvent(input$cancel, {
+    rvs$data <- rvs$dbdata
     rvs$dataSame <- TRUE
   })
   
