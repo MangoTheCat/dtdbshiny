@@ -7,7 +7,7 @@ There are times when it costs more than it should to leverage javascript, databa
 
 This shiny app aims to demonstrate minimal effort to do inline editing with DataTable at frontend and PostgreSQL at backend. After you double click on a cell and edit the value, Save and Cancel buttons will show up. Continue editing, the updates are stored in a temporary (reactiveValue) object. Click on Save if you want to send the batch updates to database; click on Cancel to reset. It doesn't rewrite the whole table in database but executes "UPDATE" queries by row/column index just in case you're wondering.
 
-Empowered by DataTable, PostgreSQL(one of many relational database options) and the R ecosystem, the author knows javascrip and sql as much as she can survive though. Workhorse functionality is made possible in the R environment by 
+Empowered by DataTable, PostgreSQL(one of many relational database options) and the R ecosystem, the author knows javascript and sql as much as she can survive though. Workhorse functionality is made possible in the R environment by 
 
 - DBI: R Database Interface 
 - RPostgreSQL: R Interface to PostgreSQL
