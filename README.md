@@ -21,6 +21,7 @@ This demo is inspired by
 - New inline edit feature of [DT](https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit)(requires version >= 0.2.30)
 - [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
 - database connectivity struggles like [this](https://github.com/rstudio/pool/issues/58)
+- string interpolation with SQL escaping via glue::glue_sql(). The new feature of [glue](https://github.com/tidyverse/glue)(requires version >= 1.2.0) makes construction of query handy and less cumbersome.
 
 To run the app:
 
