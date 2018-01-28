@@ -8,9 +8,16 @@ library(pool)
 library(DBI)
 library(RPostgreSQL)
 library(dplyr)
+library(glue)
 
 if(packageVersion("DT")<"0.2.30"){
-  stop("Inline editing requires DT version >= 0.2.30")
+  message("Inline editing requires DT version >= 0.2.30. Installing...")
+  devtools::install_github('rstudio/DT')
+}
+
+if(packageVersion("glue")<"1.2.0"){
+  message("String interpolation requires glue version >= 1.2.0. Installing....")
+  devtools::install_github('tidyverse/glue')
 }
 
 #----------------------------------------
@@ -18,28 +25,23 @@ if(packageVersion("DT")<"0.2.30"){
 # Define function that updates a value in DB
 # updateDB(editedValue, pool, tbl)
 updateDB <- function(editedValue, pool, tbl){
-  # Convert NA to "null" so DB knows it's null
-  # Keep only the last modification for same cell
+  # Keep only the last modification for a cell
   editedValue <- editedValue %>% 
-    mutate(value = ifelse(is.na(value), "null", value)) %>% 
     group_by(row, col) %>% 
-    filter(value == dplyr::last(value)) %>% 
+    filter(value == dplyr::last(value)| is.na(value)) %>% 
     ungroup()
   
   conn <- poolCheckout(pool)
   
   lapply(seq_len(nrow(editedValue)), function(i){
     id = editedValue$row[i]
-    field = dbListFields(pool, tbl)[editedValue$col[i]]
+    col = dbListFields(pool, tbl)[editedValue$col[i]]
     value = editedValue$value[i]
-    
-    query <- paste0(
-      'UPDATE ', tbl, ' SET ', 
-      field, '=',
-      value,
-      ' WHERE id=',
-      id
-    )
+
+    query <- glue::glue_sql("UPDATE {`tbl`} SET
+                          {`col`} = {value}
+                          WHERE id = {id}
+                          ", .con = conn)
     
     dbExecute(conn, sqlInterpolate(ANSI(), query))
   })
