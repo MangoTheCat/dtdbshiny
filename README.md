@@ -1,7 +1,7 @@
 # dtdbshiny
 Inline Editing and Database Updating in shiny app
 
-<img width="50%"  src="./pics/cover2.jpg" alt="">
+<img width="30%"  src="./pics/cover2.jpg" alt="">
 
 There are times when it costs more than it should to leverage javascript, database, html and all that good stuff in one place. Now is time for connecting some dots, without reaching too hard. 
 
