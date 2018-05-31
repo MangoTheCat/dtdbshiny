@@ -15,7 +15,7 @@ We created a shiny app demo to show with minimal effort you can have a PostgreSQ
 
 <img width="100%" src="./pics/screenshot2.JPG" alt="">
 
-## global
+## Global
 
 We use `pool` to manage database connections. At the beginning, a database connection pool object is constructed. With the last three lines, the pool object gets closed after a session ends. It massively saves you from worrying about when to open or close a connection. 
 
@@ -32,7 +32,7 @@ onStop(function() {
 }) # important!
 ```
 
-Second we define the function to update database. The glue's `glue_sql` function glues bits and bits of a SQL query in a human readable way. Writing SQL query was bit of a hussule job in R. If you have used `sprintf` or `past` to assemble a SQL clause, you know what I'm talking about. The glued query is then sent to `sqlInterpolate` for SQL injection protection before execution.  
+Next job is to define the function to update database. The `glue_sql` function glues bits and bits of a SQL query in a human readable way. Writing SQL queries in R was bit of a nightmare. If you used to assemble a SQL clause by `sprintf` or `past`, you know what I'm talking about. The glued query is then processed by `sqlInterpolate` for SQL injection protection before execution.  
 
 ```
 updateDB <- function(editedValue, pool, tbl){
@@ -164,7 +164,7 @@ observeEvent(input$cancel, {
 
 The UI part is exactly what you normally do. Nothing new.
 
-## Run the demo app
+## Bon Appétit
 
 1. Set up a database instance e.g. PostgreSQL, SQLite, mySQL or MS SQL Server etc.
 2. Download/clone the [GitHub repository](https://github.com/MangoTheCat/dtdbshiny) 
@@ -191,4 +191,4 @@ This demo is inspired by
 - [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
 - Database connectivity struggles like [this](https://github.com/rstudio/pool/issues/58)
 - String interpolation with SQL escaping via glue::glue_sql(). The new feature of [glue](https://github.com/tidyverse/glue)(requires version >= 1.2.0) makes construction of query handy and less cumbersome.
-- Consultancy projects at Mango
+
