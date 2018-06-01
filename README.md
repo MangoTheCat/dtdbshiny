@@ -1,25 +1,28 @@
----
-title: "Database Bulk Update and Inline Editing in Shiny Application"
-author: "Ava Yang"
----
+Database Bulk Update and Inline Editing in Shiny Application
+================
+Ava Yang
 
-## Motivation
+Motivation
+----------
 
-There are times when it costs more than it should to leverage javascript, database, html and all that good stuff in one language. Now maybe is time for connecting some dots, without reaching too hard. 
+There are times when it costs more than it should to leverage javascript, database, html, models and algorithms in one language. Now maybe is time for connecting some dots, without stretching too much.
 
-* If you have been developing shiny apps, consider letting it sit on one live database instead of manipulating data I/O by hand? 
-* If you use DT to display tables in shiny apps, care to unleash the power of interactivity to its full?
-* If you struggle with constructing SQL queries in R, so did we.    
+-   If you have been developing shiny apps, consider letting it sit on one live database instead of manipulating data I/O by hand?
+-   If you use DT to display tables in shiny apps, care to unleash the power of interactivity to its full?
+-   If you struggle with constructing SQL queries in R, so did we.
 
-We created a shiny app demo to show with minimal effort you can have a PostgreSQL database serving a shiny app, and edits from frontend get sent back to database. As seen in the screenshot, after double clicking on a cell and editing value, Save and Cancel buttons will show up. Continue editing, the updates are stored in a temporary (reactiveValue) object. Click on Save if you want to send bulk updates to database; click on Cancel to reset.
+Inspired (mainly) by exciting new inline editing feature of [DT](https://blog.rstudio.com/2018/03/29/dt-0-4/), we created a minimal shiny app demo to show how you can update multiple values from DT and send the edits to database at a time.
+
+As seen in the screenshot, after double clicking on a cell and editing the value, Save and Cancel buttons will show up. Continue editing, the updates are stored in a temporary (reactiveValue) object. Click on Save if you want to send bulk updates to database; click on Cancel to reset.
 
 <img width="100%" src="./pics/screenshot2.JPG" alt="">
 
-## Global
+Global
+------
 
-We use `pool` to manage database connections. At the beginning, a database connection pool object is constructed. With the last three lines, the pool object gets closed after a session ends. It massively saves you from worrying about when to open or close a connection. 
+On global level, we use `pool` to manage database connections. A database connection pool object is constructed. With the `onStop()` function, the pool object gets closed after a session ends. It massively saves you from worrying about when to open or close a connection.
 
-```
+``` r
 # Define pool handler by pool on global level
 pool <- pool::dbPool(drv = dbDriver("PostgreSQL"),
                      dbname="demo",
@@ -32,9 +35,9 @@ onStop(function() {
 }) # important!
 ```
 
-Next job is to define the function to update database. The `glue_sql` function glues bits and bits of a SQL query in a human readable way. Writing SQL queries in R was bit of a nightmare. If you used to assemble a SQL clause by `sprintf` or `past`, you know what I'm talking about. The glued query is then processed by `sqlInterpolate` for SQL injection protection before execution.  
+Next job is to define a function to update database. The `glue_sql` function puts together a SQL query in a human readable way. Writing SQL queries in R was bit of a nightmare. If you used to assemble a SQL clause by `sprintf` or `past`, you know what I'm talking about. The glued query is then processed by `sqlInterpolate` for SQL injection protection before being executed.
 
-```
+``` r
 updateDB <- function(editedValue, pool, tbl){
   # Keep only the last modification for a cell
   editedValue <- editedValue %>% 
@@ -63,51 +66,41 @@ updateDB <- function(editedValue, pool, tbl){
 }
 ```
 
+Server
+------
 
-## Server
+We begin with server.R from defining a couple of reactive values: **data** for most dynamic data object, **dbdata** for what's in database, **dataSame** for whether data has changed from database, **editedInfo** for edited cell information (row, col and value). Next, create a reactive expression of source data to retrieve data, and assign it to reactive values.
 
-All the essense is in server.R. 
-
-```
+``` r
+# Generate reactive values
 rvs <- reactiveValues(
-  data = NA, # most recent data object
-  dbdata = NA, # what's in database
-  dataSame = TRUE,# logical, whether data has changed from database 
-  editedInfo = NA # edited cells altogether
+  data = NA, 
+  dbdata = NA, 
+  dataSame = TRUE, 
+  editedInfo = NA 
 )
-```
 
-
-```
 # Generate source via reactive expression
 mysource <- reactive({
   pool %>% tbl("nasa") %>% collect()
 })
 
-```
-
-```
-# Generate source via reactive expression
-  mysource <- reactive({
-    pool %>% tbl("nasa") %>% collect()
-  })
-```
-
-```
 # Observe the source, update reactive values accordingly
-  observeEvent(mysource(), {
-    
-    # Lightly format data by arranging id
-    # Not sure why disordered after sending UPDATE query in db    
-    data <- mysource() %>% arrange(id)
-    
-    rvs$data <- data
-    rvs$dbdata <- data
-    
-  })
+observeEvent(mysource(), {
+  
+  # Lightly format data by arranging id
+  # Not sure why disordered after sending UPDATE query in db    
+  data <- mysource() %>% arrange(id)
+  
+  rvs$data <- data
+  rvs$dbdata <- data
+  
+})
 ```
 
-```
+We then render a DataTable object, create its proxy. Note that the **editable** parameter needs to be explicitly turned on. Finally with some format tweaking, we can merge the cell information, including row id, column id and value, with DT proxy and keep all edits as a single reactive value. See [examples](https://github.com/rstudio/DT/pull/480) for details.
+
+``` r
 # Render DT table and edit cell
 # 
 # no curly bracket inside renderDataTable
@@ -142,7 +135,9 @@ observeEvent(input$mydt_cell_edit, {
 })
 ```
 
-```
+Once Save button is clicked upon, send bulk updates to database using the function we defined above. Discard current edits and revert DT to last saved status of database when you hit Cancel. Last chunk is a little trick that generates interactive UI buttons. When dynamic data object differs from the database representative object, show Save and Cancel buttons; otherwise hide them.
+
+``` r
 # Update edited values in db once save is clicked
 observeEvent(input$save, {
   updateDB(editedValue = rvs$editedInfo, pool = pool, tbl = "nasa")
@@ -150,45 +145,59 @@ observeEvent(input$save, {
   rvs$dbdata <- rvs$data
   rvs$dataSame <- TRUE
 })
-```
 
-```
 # Observe cancel -> revert to last saved version
 observeEvent(input$cancel, {
   rvs$data <- rvs$dbdata
   rvs$dataSame <- TRUE
 })
+
+# UI buttons
+output$buttons <- renderUI({
+  div(
+    if (! rvs$dataSame) {
+      span(
+        actionButton(inputId = "save", label = "Save",
+                     class = "btn-primary"),
+        actionButton(inputId = "cancel", label = "Cancel")
+      )
+    } else {
+      span()
+    }
+  )
+})
 ```
 
-## UI
+UI
+--
 
 The UI part is exactly what you normally do. Nothing new.
 
-## Bon Appétit
+Bon Appétit
+-----------
 
-1. Set up a database instance e.g. PostgreSQL, SQLite, mySQL or MS SQL Server etc.
-2. Download/clone the [GitHub repository](https://github.com/MangoTheCat/dtdbshiny) 
-3. Run through script `app/prep.R` but change database details to one's own. It writes to DB our demo dataset which is the *nasa* dataset from dplyr with an index column added 
-4. Also update database details in `app/app.R` and run
-```
-shiny::runApp("app")
-```
+1.  Set up a database instance e.g. PostgreSQL, SQLite, mySQL or MS SQL Server etc.
+2.  Download/clone the [GitHub repository](https://github.com/MangoTheCat/dtdbshiny)
+3.  Run through script `app/prep.R` but change database details to one's own. It writes to DB our demo dataset which is the *nasa* dataset from dplyr with an index column added
+4.  Also update database details in `app/app.R` and run
 
-## Acknowledgement 
+        shiny::runApp("app")
 
-Workhorse functionality is made possible by 
+Acknowledgement
+---------------
 
-- DBI: R Database Interface 
-- RPostgreSQL: R Interface to PostgreSQL (one of many relational database options)
-- pool: DBI connection object pooling
-- DT: R Interface to the jQuery Plug-in DataTables
-- Shiny: Web Application Framework for R
-- dplyr: Data manipulation
+Workhorse functionality is made possible by:
 
-This demo is inspired by  
+-   DBI: R Database Interface
+-   RPostgreSQL: R Interface to PostgreSQL (one of many relational database options)
+-   pool: DBI connection object pooling
+-   DT: R Interface to the jQuery Plug-in DataTables
+-   Shiny: Web Application Framework for R
+-   dplyr: Data manipulation
 
-- New inline edit feature of [DT](https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit)(requires version >= 0.2.30)
-- [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
-- Database connectivity struggles like [this](https://github.com/rstudio/pool/issues/58)
-- String interpolation with SQL escaping via glue::glue_sql(). The new feature of [glue](https://github.com/tidyverse/glue)(requires version >= 1.2.0) makes construction of query handy and less cumbersome.
+Full inspiration list:
 
+-   Inline edit feature of [DT](https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit)(requires version &gt;= 0.2.30)
+-   [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
+-   Database connectivity struggles like [this](https://github.com/rstudio/pool/issues/58)
+-   String interpolation with SQL escaping via glue::glue\_sql(). The new feature of [glue](https://github.com/tidyverse/glue)(requires version &gt;= 1.2.0) makes construction of query handy and less cumbersome.
