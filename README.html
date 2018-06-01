@@ -288,16 +288,10 @@ output$buttons &lt;- renderUI({
 <li>DBI: R Database Interface</li>
 <li>RPostgreSQL: R Interface to PostgreSQL (one of many relational database options)</li>
 <li>pool: DBI connection object pooling</li>
-<li>DT: R Interface to the jQuery Plug-in DataTables</li>
+<li>DT: R Interface to the jQuery Plug-in DataTables (requires version &gt;= 0.2.30)</li>
 <li>Shiny: Web Application Framework for R</li>
 <li>dplyr: Data manipulation</li>
-</ul>
-<p>Full inspiration list:</p>
-<ul>
-<li>Inline edit feature of <a href="https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit">DT</a>(requires version &gt;= 0.2.30)</li>
-<li><a href="https://github.com/MangoTheCat/dynshiny">dynshiny</a>: Dynamically generated Shiny UI</li>
-<li>Database connectivity struggles like <a href="https://github.com/rstudio/pool/issues/58">this</a></li>
-<li>String interpolation with SQL escaping via glue::glue_sql(). The new feature of <a href="https://github.com/tidyverse/glue">glue</a>(requires version &gt;= 1.2.0) makes construction of query handy and less cumbersome.</li>
+<li>glue: Glue strings to data in R. Small, fast, dependency free interpreted string literals (requires version &gt;= 1.2.0.9000. Blank cell crashes the app with version 1.2.0)</li>
 </ul>
 </div>
 </div>

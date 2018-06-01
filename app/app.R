@@ -15,8 +15,8 @@ if(packageVersion("DT")<"0.2.30"){
   devtools::install_github('rstudio/DT')
 }
 
-if(packageVersion("glue")<"1.2.0"){
-  message("String interpolation requires glue version >= 1.2.0. Installing....")
+if(packageVersion("glue")<"1.2.0.9000"){
+  message("String interpolation implemented in glue version 1.2.0 but this version doesn't convert NA to NULL. Requires version 1.2.0.9000. Installing....")
   devtools::install_github('tidyverse/glue')
 }
 
@@ -101,20 +101,6 @@ server <- function(input, output, session) {
     editedInfo = NA
   )
   
-  output$buttons <- renderUI({
-    div(
-      if (! rvs$dataSame) {
-        span(
-          actionButton(inputId = "save", label = "Save",
-                       class = "btn-primary"),
-          actionButton(inputId = "cancel", label = "Cancel")
-        )
-      } else {
-        span()
-      }
-    )
-  })
-
   #-----------------------------------------  
   # Generate source via reactive expression
   mysource <- reactive({
@@ -184,6 +170,22 @@ server <- function(input, output, session) {
   observeEvent(input$cancel, {
     rvs$data <- rvs$dbdata
     rvs$dataSame <- TRUE
+  })
+  
+  #-----------------------------------------
+  # UI buttons
+  output$buttons <- renderUI({
+    div(
+      if (! rvs$dataSame) {
+        span(
+          actionButton(inputId = "save", label = "Save",
+                       class = "btn-primary"),
+          actionButton(inputId = "cancel", label = "Cancel")
+        )
+      } else {
+        span()
+      }
+    )
   })
   
 }

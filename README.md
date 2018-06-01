@@ -191,13 +191,7 @@ Workhorse functionality is made possible by:
 -   DBI: R Database Interface
 -   RPostgreSQL: R Interface to PostgreSQL (one of many relational database options)
 -   pool: DBI connection object pooling
--   DT: R Interface to the jQuery Plug-in DataTables
+-   DT: R Interface to the jQuery Plug-in DataTables (requires version &gt;= 0.2.30)
 -   Shiny: Web Application Framework for R
 -   dplyr: Data manipulation
-
-Full inspiration list:
-
--   Inline edit feature of [DT](https://github.com/rstudio/DT/tree/master/inst/examples/DT-edit)(requires version &gt;= 0.2.30)
--   [dynshiny](https://github.com/MangoTheCat/dynshiny): Dynamically generated Shiny UI
--   Database connectivity struggles like [this](https://github.com/rstudio/pool/issues/58)
--   String interpolation with SQL escaping via glue::glue\_sql(). The new feature of [glue](https://github.com/tidyverse/glue)(requires version &gt;= 1.2.0) makes construction of query handy and less cumbersome.
+-   glue: Glue strings to data in R. Small, fast, dependency free interpreted string literals (requires version &gt;= 1.2.0.9000. Blank cell crashes the app with version 1.2.0)
