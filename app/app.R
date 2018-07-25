@@ -139,17 +139,15 @@ server <- function(input, output, session) {
     j = info$col = info$col + 1  # column index offset by 1
     v = info$value
     
-    info$value <- as.numeric(info$value)
-    
-    rvs$data[i, j] <<- DT::coerceValue(v, purrr::flatten_dbl(rvs$data[i, j]))
+    rvs$data[i, j] <<- DT::coerceValue(v, dplyr::pull(rvs$data[i, j]))
     replaceData(proxy3, rvs$data, resetPaging = FALSE, rownames = FALSE)
-    
+
     rvs$dataSame <- identical(rvs$data, rvs$dbdata)
-    
+
     if (all(is.na(rvs$editedInfo))) {
-      rvs$editedInfo <- data.frame(info)
+      rvs$editedInfo <- data.frame(info, stringsAsFactors = FALSE)
     } else {
-      rvs$editedInfo <- dplyr::bind_rows(rvs$editedInfo, data.frame(info))
+      rvs$editedInfo <- dplyr::bind_rows(rvs$editedInfo, data.frame(info, stringsAsFactors = FALSE))
     }
     
   })
